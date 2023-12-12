@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Customer } from '../customer/customer.types';
-import { ApiService } from '../shared/services/api.service';
+import { BasketService } from './basket.service'; // Import du service BasketService
 import { BasketItem } from './basket.types';
 
 @Component({
@@ -10,25 +10,25 @@ import { BasketItem } from './basket.types';
 })
 export class BasketComponent {
   protected basketItems: BasketItem[] = [];
-
   protected customer: Customer = { name: '', address: '', creditCard: '' };
 
   constructor(
-    private apiService: ApiService,
+    private basketService: BasketService, // Injection de BasketService
     private router: Router,
   ) {
-    this.apiService.getBasket().subscribe((basketItems) => (this.basketItems = basketItems));
+    // Utilisation de BasketService pour récupérer les éléments du panier
+    this.basketService.fetch().subscribe((basketItems) => (this.basketItems = basketItems));
   }
 
   protected get basketTotal(): number {
-    return this.basketItems.reduce((total, { price }) => total + price, 0);
+    return this.basketService.total; // Utilisation de la propriété 'total' de BasketService
   }
 
   protected checkout(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
 
-    this.apiService.checkoutBasket(this.customer).subscribe(() => {
+    this.basketService.checkout(this.customer).subscribe(() => {
       this.basketItems = [];
       this.router.navigate(['']);
     });
